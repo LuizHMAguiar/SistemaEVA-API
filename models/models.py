@@ -36,7 +36,7 @@ class Aluno(BaseModel):
     turma = CharField()
 
 class Avaliacao(BaseModel):
-    id = AutoField(primary_key=True)
+    ID = AutoField(primary_key=True)
     CPF_professor = ForeignKeyField(Professor)
     titulo = CharField()
     tipo = CharField()
@@ -48,7 +48,7 @@ class Avaliacao(BaseModel):
     tempo = TimeField()
 
 class Questao(BaseModel):  
-    id = AutoField(primary_key=True)
+    ID = AutoField(primary_key=True)
     tipo = CharField()
     enunciado = CharField()
     opcao_a= CharField()
@@ -58,9 +58,45 @@ class Questao(BaseModel):
     opcao_e= CharField()
 
 class QuestaoAvaliacao(BaseModel):
-    id_questao = ForeignKeyField(Questao)
-    id_avaliacao = ForeignKeyField(Avaliacao)
+    ID_questao = ForeignKeyField(Questao)
+    ID_avaliacao = ForeignKeyField(Avaliacao)
 
     class Meta: 
-        primary_key = CompositeKey('id_questao', 'id_avaliacao')
+        primary_key = CompositeKey('ID_questao', 'ID_avaliacao')
 
+class RespostaAvaliacao(BaseModel):
+    CPF_aluno = ForeignKeyField(Aluno)
+    ID_avaliacao = ForeignKeyField(Avaliacao)
+
+    class Meta:
+        primary_key = CompositeKey('CPF_aluno', 'ID_avaliacao')
+    
+    data_hora_inicio = DateTimeField()
+    data_hora_fim = DateTimeField()
+    tempo_corrido = TimeField()
+    
+class RespostaQuestao(BaseModel):
+    CPF_aluno = ForeignKeyField(Aluno)
+    ID_avaliacao = ForeignKeyField(Avaliacao)
+    ID_questao = ForeignKeyField(Questao)
+
+    class Meta:
+        primary_key = CompositeKey('CPF_aluno', 'ID_avaliacao', 'ID_questao') 
+    
+    resposta = CharField()
+    audio_resposta = BlobField()
+
+if __name__ == "__main__":
+    try:
+        db.connect()
+        # Cria as tabelas 
+        db.create_tables([
+            Instituicao, Professor, Aluno, 
+            Avaliacao, Questao, QuestaoAvaliacao, 
+            RespostaAvaliacao, RespostaQuestao
+        ])
+        print("Banco de dados e tabelas criados com sucesso!")
+    except Exception as e:
+        print(f"Erro ao criar o banco: {e}")
+    finally:
+        db.close()
