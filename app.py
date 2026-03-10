@@ -1,7 +1,8 @@
 from flask import Flask
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
-from models.models import db
+from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao, QuestaoAvaliacao, RespostaAvaliacao, RespostaQuestao
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mensagens flash
@@ -27,4 +28,17 @@ def _db_close(response):
 app.register_blueprint(auth)
 
 if __name__ == '__main__':
+    try:
+        db.connect()
+        # Cria as tabelas 
+        db.create_tables([
+            Instituicao, Professor, Aluno, 
+            Avaliacao, Questao, QuestaoAvaliacao, 
+            RespostaAvaliacao, RespostaQuestao
+        ])
+        print("Banco de dados e tabelas criados com sucesso!")
+    except Exception as e:
+        print(f"Erro ao criar o banco: {e}")
+    finally:
+        db.close()
     app.run(debug=True)

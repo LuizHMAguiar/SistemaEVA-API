@@ -86,17 +86,3 @@ class RespostaQuestao(BaseModel):
     resposta = CharField()
     audio_resposta = BlobField()
 
-if __name__ == "__main__":
-    try:
-        db.connect()
-        # Cria as tabelas 
-        db.create_tables([
-            Instituicao, Professor, Aluno, 
-            Avaliacao, Questao, QuestaoAvaliacao, 
-            RespostaAvaliacao, RespostaQuestao
-        ])
-        print("Banco de dados e tabelas criados com sucesso!")
-    except Exception as e:
-        print(f"Erro ao criar o banco: {e}")
-    finally:
-        db.close()
