@@ -1,6 +1,7 @@
 from flask import Flask
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
+from rotas.avaliacao import avaliacao 
 from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao, QuestaoAvaliacao, RespostaAvaliacao, RespostaQuestao
 
 
@@ -26,6 +27,7 @@ def _db_close(response):
 
 # Regista o Blueprint das rotas
 app.register_blueprint(auth)
+app.register_blueprint(avaliacao)
 
 if __name__ == '__main__':
     try:
