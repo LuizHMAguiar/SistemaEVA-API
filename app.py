@@ -37,7 +37,7 @@ if __name__ == '__main__':
             Instituicao, Professor, Aluno, 
             Avaliacao, Questao, QuestaoAvaliacao, 
             RespostaAvaliacao, RespostaQuestao
-        ])
+        ], safe=True)
         print("Banco de dados e tabelas criados com sucesso!")
     except Exception as e:
         print(f"Erro ao criar o banco: {e}")

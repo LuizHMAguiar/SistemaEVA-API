@@ -58,9 +58,9 @@ class Questao(BaseModel):
     opcao_e= CharField()
 
 class QuestaoAvaliacao(BaseModel):
-    ID_questao = ForeignKeyField(Questao)
-    ID_avaliacao = ForeignKeyField(Avaliacao)
-
+    ID_questao = ForeignKeyField(Questao)   
+    ID_avaliacao = ForeignKeyField(Avaliacao)                                            
+                   
     class Meta: 
         primary_key = CompositeKey('ID_questao', 'ID_avaliacao')
 
