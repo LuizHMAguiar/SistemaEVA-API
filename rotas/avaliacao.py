@@ -50,7 +50,7 @@ def listar_avaliacoes():
     for avaliacao in avaliacoes:
         resultado.append({
             "id": avaliacao.ID,
-            "cpf_professor": avaliacao.CPF_professor.CPF, 
+            "cpf_professor": avaliacao.CPF_professor_id, 
             "titulo": avaliacao.titulo,
             "tipo": avaliacao.tipo,
             "curso": avaliacao.curso,
@@ -69,7 +69,7 @@ def buscar_avaliacao_por_id(id):
         avaliacao = Avaliacao.get(Avaliacao.ID == id)
         resultado = {
             "id": avaliacao.ID,
-            "cpf_professor": avaliacao.CPF_professor.CPF,
+            "cpf_professor": avaliacao.CPF_professor_id,
             "titulo": avaliacao.titulo,
             "tipo": avaliacao.tipo,
             "curso": avaliacao.curso,
@@ -84,6 +84,48 @@ def buscar_avaliacao_por_id(id):
         return jsonify({"error": "Avaliação não encontrada"}), 404
     except Exception as e:
         return jsonify({"error": "Erro ao buscar avaliação", "details": str(e)}), 500
+
+@avaliacao.route('/avaliacao/<int:id>', methods=['PATCH'])
+def atualizar_avaliacao(id):
+    dados = request.get_json()
+    
+    try:
+        avaliacao = Avaliacao.get(Avaliacao.ID == id)
+        
+        # Atualiza os campos fornecidos
+        if 'cpf_professor' in dados:
+            professor_existente = Professor.get_or_none(Professor.CPF == dados.get('cpf_professor'))
+            if professor_existente is None:
+                return jsonify({"error": "CPF do professor não encontrado no sistema"}), 400
+            avaliacao.CPF_professor = dados.get('cpf_professor')
+        
+        if 'titulo' in dados:
+            avaliacao.titulo = dados['titulo']
+        if 'tipo' in dados:
+            avaliacao.tipo = dados['tipo']
+        if 'curso' in dados:
+            avaliacao.curso = dados['curso']
+        if 'turma' in dados:
+            avaliacao.turma = dados['turma']
+        if 'disciplina' in dados:
+            avaliacao.disciplina = dados['disciplina']
+        if 'data_inicio' in dados:
+            avaliacao.data_inicio = dados['data_inicio']
+        if 'data_fim' in dados:
+            avaliacao.data_fim = dados['data_fim']
+        if 'tempo' in dados:
+            avaliacao.tempo = dados['tempo']
+        
+        avaliacao.save()
+        return jsonify({"message": "Avaliação atualizada com sucesso!"}), 200
+    except Avaliacao.DoesNotExist:
+        return jsonify({"error": "Avaliação não encontrada"}), 404
+    except IntegrityError:
+        return jsonify({"error": "Erro de integridade: verifique os dados enviados"}), 400
+    except Exception as e:
+        return jsonify({"error": "Erro ao atualizar avaliação", "details": str(e)}), 500
+
+
 
 @avaliacao.route('/avaliacao/<int:id>', methods=['DELETE'])
 def excluir_avaliacao(id):

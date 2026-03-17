@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 from peewee import IntegrityError
 from flask_bcrypt import Bcrypt
-from models.models import Avaliacao, Instituicao, Professor
+from models.models import Instituicao, Professor
 
 professor = Blueprint('professor', __name__)
+bcrypt = Bcrypt()
+
 
 @professor.route('/professor', methods=['POST'])
 def cadastro_professor():

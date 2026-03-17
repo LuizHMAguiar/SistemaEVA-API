@@ -46,7 +46,7 @@ def listar_alunos():
     for aluno in alunos:
         resultado.append({
             "cpf": aluno.CPF,
-            "cnpj_instituicao": aluno.CNPJ_instituicao,
+            "cnpj_instituicao": aluno.CNPJ_instituicao.CNPJ,
             "nome_completo": aluno.nome_completo,
             "email": aluno.email,
             "curso": aluno.curso,
@@ -55,13 +55,13 @@ def listar_alunos():
     
     return jsonify(resultado), 200
 
-@aluno.route('/aluno/<cpf>', methods=['GET'])
+@aluno.route('/aluno/<string:cpf>', methods=['GET'])
 def buscar_aluno_por_cpf(cpf):
     try:
         aluno = Aluno.get(Aluno.CPF == cpf)
         resultado = {
             "cpf": aluno.CPF,
-            "cnpj_instituicao": aluno.CNPJ_instituicao,
+            "cnpj_instituicao": aluno.CNPJ_instituicao.CNPJ,
             "nome_completo": aluno.nome_completo,
             "email": aluno.email,
             "curso": aluno.curso,
