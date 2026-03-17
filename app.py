@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
 from rotas.avaliacao import avaliacao 
