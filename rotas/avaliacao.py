@@ -15,7 +15,7 @@ def cadastro_avaliacao():
         
         if professor_existente is None:
             # O 'return' aqui impede que qualquer código abaixo (incluindo o .create) seja executado
-            return jsonify({"error": "CPF do professor não encontrado no sistema"}), 404
+            return jsonify({"error": "CPF do professor não encontrado no sistema"}), 400
         
         # 2. Criação: Só será executado se o professor acima EXISTIR
         nova_avaliacao = Avaliacao.create(
