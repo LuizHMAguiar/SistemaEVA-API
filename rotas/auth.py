@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, redirect, url_for, flash
+from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt
 from peewee import IntegrityError
 from models.models import Instituicao, Professor, Aluno

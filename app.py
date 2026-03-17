@@ -3,6 +3,8 @@ from flasgger import Swagger
 from rotas.auth import auth, bcrypt
 from rotas.avaliacao import avaliacao 
 from rotas.aluno import aluno
+from rotas.professor import professor
+from rotas.instituicao import instituicao
 from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao, QuestaoAvaliacao, RespostaAvaliacao, RespostaQuestao
 
 
@@ -30,6 +32,8 @@ def _db_close(response):
 app.register_blueprint(auth)
 app.register_blueprint(avaliacao)
 app.register_blueprint(aluno)
+app.register_blueprint(professor)
+app.register_blueprint(instituicao)
 
 if __name__ == '__main__':
     try:
