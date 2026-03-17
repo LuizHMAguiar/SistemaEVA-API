@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
 from rotas.avaliacao import avaliacao 
@@ -11,6 +12,15 @@ from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao,
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mensagens flash
+
+# Lista de URLs permitidas (ajuste as portas do localhost se necessário)
+allowed_origins = [
+    "http://localhost:5000",       # Localhost
+    "https://sistemaeva-api.onrender.com" #Link Render
+]
+
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
+
 
 # Inicializa as extensões
 swagger = Swagger(app)
