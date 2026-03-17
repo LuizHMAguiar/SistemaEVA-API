@@ -11,6 +11,15 @@ from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao,
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mensagens flash
 
+# Lista de URLs permitidas (ajuste as portas do localhost se necessário)
+allowed_origins = [
+    "http://localhost:5000",       # Localhost
+    "https://https://sistemaeva-api.onrender.com" #Link Render
+]
+
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
+
+
 # Inicializa as extensões
 swagger = Swagger(app)
 bcrypt.init_app(app)

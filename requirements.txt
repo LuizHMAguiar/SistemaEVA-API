@@ -3,4 +3,5 @@ peewee==4.0.1
 flasgger>=0.9.7.1
 flask-bcrypt  
 flask_login 
+flask-cors
 gunicorn
