@@ -9,6 +9,20 @@ questao_bp = Blueprint('questoes', __name__)
 def cadastrar_questao():
 
     dados = request.get_json()
+
+    if dados.get('id_avaliacao') == None:
+        return jsonify({"error": "ID da avaliação é obrigatório"}), 400
+    
+    avaliacao = Avaliacao.get_or_none(Avaliacao.ID == dados.get('id_avaliacao'))
+    if not avaliacao:
+        return jsonify({"error": "Avaliação não encontrada"}), 404
+
+    if dados.get('tipo') == None or dados.get('enunciado') == None or dados.get('opcoes', {}).get('a') == None or dados.get('opcoes', {}).get('b') == None :
+        return jsonify({"error": "Dados obrigatório não informados: Tipo da questão, Enunciado, Opção A e Opção B são obrigatórios"}), 400
+
+    if dados.get('tipo') not in ['Múltipla Escolha', 'Dissertativa', 'V ou F']:
+        return jsonify({"error": "Tipo de questão inválido. Deve ser 'Múltipla Escolha', 'V ou F' ou 'Dissertativa'."}), 400
+
     try:
         # 1 -> Salva a questão com suas opções
         nova_q = Questao.create(
