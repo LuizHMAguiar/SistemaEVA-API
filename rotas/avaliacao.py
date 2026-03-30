@@ -9,17 +9,14 @@ def cadastro_avaliacao():
     dados = request.get_json()
     
     try:
-        # 1. Validação de Integridade: Verifica se o Professor existe
-        # Nota: Usamos Professor.CPF (maiúsculo) conforme o seu models.py
+        # 1. Validação de Integridade: Verifica se o Professor existe [cite: 102, 103]
         professor_existente = Professor.get_or_none(Professor.CPF == dados.get('cpf_professor'))
         
         if professor_existente is None:
-            # O 'return' aqui impede que qualquer código abaixo (incluindo o .create) seja executado
             return jsonify({"error": "CPF do professor não encontrado no sistema"}), 400
         
-        # 2. Criação: Só será executado se o professor acima EXISTIR
+        # 2. Criação: Adicionamos o campo codigo_acesso [cite: 102, 103]
         nova_avaliacao = Avaliacao.create(
-            # ID é AutoField, então não é obrigatório enviar, mas mantemos se desejar manual
             ID=dados.get('id'), 
             CPF_professor=dados.get('cpf_professor'),
             titulo=dados.get('titulo'),
@@ -29,19 +26,41 @@ def cadastro_avaliacao():
             disciplina=dados.get('disciplina'),
             data_inicio=dados.get('data_inicio'),
             data_fim=dados.get('data_fim'),
-            tempo=dados.get('tempo')
+            tempo=dados.get('tempo'), # Adicionada a vírgula aqui!
+            codigo_acesso=dados.get('codigo_acesso')
         )
         
         return jsonify({
             "message": "Avaliação cadastrada com sucesso!",
-            "id_gerado": nova_avaliacao.ID
+            "id_gerado": nova_avaliacao.ID, # Adicionada a vírgula aqui!
+            "codigo_acesso": nova_avaliacao.codigo_acesso
         }), 201
 
     except IntegrityError:
-        # Captura erros como violação de chave estrangeira se o banco de dados barrar
-        return jsonify({"error": "Erro de integridade: verifique os dados enviados"}), 400
+        return jsonify({"error": "Erro de integridade: verifique se o código de acesso já existe"}), 400
     except Exception as e:
         return jsonify({"error": "Erro interno no servidor", "details": str(e)}), 500
+
+@avaliacao.route('/avaliacao/acesso/<string:codigo>', methods=['GET'])
+def buscar_por_codigo(codigo):
+    try:
+        # Busca a avaliação pelo código de acesso único
+        prova = Avaliacao.get(Avaliacao.codigo_acesso == codigo)
+        
+        return jsonify({
+            "id": prova.ID,
+            "titulo": prova.titulo,
+            "disciplina": prova.disciplina,
+            "professor": prova.CPF_professor.nome_completo,
+            "data_inicio": str(prova.data_inicio),
+            "data_fim": str(prova.data_fim),
+            "tempo_total": prova.tempo
+        }), 200
+        
+    except Avaliacao.DoesNotExist:
+        return jsonify({"error": "Código de acesso inválido ou avaliação não encontrada"}), 404
+
+
 @avaliacao.route('/avaliacao', methods=['GET'])
 def listar_avaliacoes():
     avaliacoes = Avaliacao.select()
@@ -137,4 +156,47 @@ def excluir_avaliacao(id):
         return jsonify({"error": "Avaliação não encontrada"}), 404
     except Exception as e:
         return jsonify({"error": "Erro ao excluir avaliação", "details": str(e)}), 500
+
+
+
+@avaliacao.route('/avaliacao/clonar/<int:id_original>', methods=['POST'])
+def clonar_avaliacao(id_original):
+    try:
+        # 1. Busca a avaliação que será clonada
+        original = Avaliacao.get_or_none(Avaliacao.ID == id_original)
+        
+        if not original:
+            return jsonify({"error": "Avaliação original não encontrada"}), 404
+        
+        # 2. Obtém os dados extras do request (ex: um novo código de acesso)
+        dados = request.get_json()
+        novo_codigo = dados.get('novo_codigo_acesso')
+        
+        if not novo_codigo:
+            return jsonify({"error": "É necessário fornecer um novo código de acesso único para o clone"}), 400
+
+        # 3. Cria a nova avaliação baseada na original
+        clone = Avaliacao.create(
+            CPF_professor=original.CPF_professor, # Mantém o mesmo professor
+            titulo=f"{original.titulo} (Cópia)",
+            tipo=original.tipo,
+            curso=original.curso,
+            turma=original.turma,
+            disciplina=original.disciplina,
+            data_inicio=original.data_inicio,
+            data_fim=original.data_fim,
+            tempo=original.tempo,
+            codigo_acesso=novo_codigo # Novo código obrigatório
+        )
+        
+        return jsonify({
+            "message": "Avaliação clonada com sucesso!",
+            "novo_id": clone.ID,
+            "novo_codigo": clone.codigo_acesso
+        }), 201
+
+    except IntegrityError:
+        return jsonify({"error": "O novo código de acesso já está em uso"}), 400
+    except Exception as e:
+        return jsonify({"error": "Erro ao clonar", "details": str(e)}), 500
 

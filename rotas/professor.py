@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from peewee import IntegrityError
 from flask_bcrypt import Bcrypt
-from models.models import Instituicao, Professor
+from flask import send_file
+import io
+from models.models import Instituicao, Professor, RespostaQuestao, Questao
 
 professor = Blueprint('professor', __name__)
 bcrypt = Bcrypt()
@@ -109,4 +111,92 @@ def atualizar_professor(cpf):
         return jsonify({"error": "Professor não encontrado"}), 404
     except Exception as e:
         return jsonify({"error": "Erro ao atualizar professor", "details": str(e)}), 500
-        
+from models.models import RespostaAvaliacao, Aluno, Avaliacao
+
+@professor.route('/relatorio/avaliacao/<int:id_avaliacao>', methods=['GET'])
+def relatorio_avaliacao(id_avaliacao):
+    try:
+        # Busca todas as respostas daquela avaliação específica
+        respostas = (RespostaAvaliacao
+                     .select(RespostaAvaliacao, Aluno)
+                     .join(Aluno)
+                     .where(RespostaAvaliacao.ID_avaliacao == id_avaliacao))
+
+        if not respostas:
+            return jsonify({"message": "Nenhum aluno iniciou esta avaliação ainda."}), 200
+
+        resultado = []
+        for r in respostas:
+            resultado.append({
+                "nome_aluno": r.CPF_aluno.nome_completo,
+                "cpf": r.CPF_aluno.CPF,
+                "inicio": r.data_hora_inicio.strftime("%d/%m/%Y %H:%M:%S") if r.data_hora_inicio else None,
+                "fim": r.data_hora_fim.strftime("%d/%m/%Y %H:%M:%S") if r.data_hora_fim else "Em andamento",
+                "tempo_total": r.tempo_corrido or "Pendente"
+            })
+
+        return jsonify({
+            "avaliacao_id": id_avaliacao,
+            "total_alunos": len(resultado),
+            "participantes": resultado
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": "Erro ao gerar relatório", "details": str(e)}), 500 
+
+@professor.route('/relatorio/aluno/<string:cpf_aluno>/avaliacao/<int:id_avaliacao>', methods=['GET'])
+def detalhe_respostas_aluno(cpf_aluno, id_avaliacao):
+    try:
+        # Busca as respostas vinculadas ao aluno e avaliação, trazendo os dados da questão
+        respostas = (RespostaQuestao
+                     .select(RespostaQuestao, Questao)
+                     .join(Questao)
+                     .where((RespostaQuestao.CPF_aluno == cpf_aluno) & 
+                            (RespostaQuestao.ID_avaliacao == id_avaliacao)))
+
+        if not respostas:
+            return jsonify({"message": "Nenhuma resposta encontrada para este aluno nesta avaliação."}), 404
+
+        detalhes = []
+        for r in respostas:
+            detalhes.append({
+                "questao_id": r.ID_questao.ID,
+                "enunciado": r.ID_questao.enunciado,
+                "tipo_questao": r.ID_questao.tipo,
+                "resposta_texto": r.resposta,
+                "tem_audio": True if r.audio_resposta else False
+            })
+
+        return jsonify({
+            "cpf_aluno": cpf_aluno,
+            "id_avaliacao": id_avaliacao,
+            "respostas": detalhes
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": "Erro ao buscar detalhes das respostas", "details": str(e)}), 500
+
+
+@professor.route('/audio/<string:cpf>/<int:id_av>/<int:id_q>', methods=['GET'])
+def buscar_audio_resposta(cpf, id_av, id_q):
+    try:
+        # Busca a resposta específica que contém o arquivo de áudio
+        resposta = RespostaQuestao.get_or_none(
+            (RespostaQuestao.CPF_aluno == cpf) & 
+            (RespostaQuestao.ID_avaliacao == id_av) & 
+            (RespostaQuestao.ID_questao == id_q)
+        )
+
+        if not resposta or not resposta.audio_resposta:
+            return jsonify({"error": "Áudio não encontrado para esta questão."}), 404
+
+        # Transforma o binário do banco em um "arquivo virtual" na memória
+        return send_file(
+            io.BytesIO(resposta.audio_resposta),
+            mimetype='audio/webm', # Ou 'audio/mpeg' dependendo de como o front grava
+            as_attachment=False,
+            download_name=f"resposta_{cpf}_{id_q}.webm"
+        )
+
+    except Exception as e:
+        return jsonify({"error": "Erro ao recuperar áudio", "details": str(e)}), 500    

@@ -4,7 +4,7 @@ from flasgger import Swagger
 from rotas.auth import auth, bcrypt
 from rotas.avaliacao import avaliacao 
 from rotas.aluno import aluno
-from rotas.questao import questao_bp    
+#from rotas.questao import questao_bp    
 from rotas.professor import professor
 from rotas.instituicao import instituicao
 from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao, QuestaoAvaliacao, RespostaAvaliacao, RespostaQuestao
@@ -45,7 +45,7 @@ app.register_blueprint(avaliacao)
 app.register_blueprint(aluno)
 app.register_blueprint(professor)
 app.register_blueprint(instituicao)
-app.register_blueprint(questao_bp)
+#app.register_blueprint(questao_bp)
 
 if __name__ == '__main__':
     try:

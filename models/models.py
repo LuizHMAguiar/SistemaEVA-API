@@ -1,18 +1,12 @@
-#models.py (COMPLETO E CORRIGIDO)
-from peewee import *    
-import datetime 
-#Importações necessárias para login/segurança
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from peewee import *
+import datetime
 
-#Conexão com o banco de dados
 db = SqliteDatabase("database.db")
 
 class BaseModel(Model):
     class Meta:
         database = db 
 
-# CRIAR CADA ENTIDADE BASEADO NO DIAGRAMA PARA UM BANCO DE DADOS 
 class Instituicao(BaseModel):
     CNPJ = CharField(primary_key=True)
     nome = CharField()
@@ -45,17 +39,18 @@ class Avaliacao(BaseModel):
     disciplina = CharField()
     data_inicio = DateTimeField()
     data_fim = DateTimeField()
-    tempo = TimeField()
+    tempo = CharField() # Alterado para CharField para aceitar formatos como "02:00"
+    codigo_acesso = CharField(unique=True, null=True) # CAMPO ADICIONADO
 
 class Questao(BaseModel):  
     ID = AutoField(primary_key=True)
     tipo = CharField()
     enunciado = CharField()
-    opcao_a= CharField()
-    opcao_b= CharField()    
-    opcao_c= CharField()
-    opcao_d= CharField()
-    opcao_e= CharField()
+    opcao_a = CharField()
+    opcao_b = CharField()    
+    opcao_c = CharField(null=True) 
+    opcao_d = CharField(null=True) 
+    opcao_e = CharField(null=True) 
 
 class QuestaoAvaliacao(BaseModel):
     ID_questao = ForeignKeyField(Questao)   
@@ -67,22 +62,19 @@ class QuestaoAvaliacao(BaseModel):
 class RespostaAvaliacao(BaseModel):
     CPF_aluno = ForeignKeyField(Aluno)
     ID_avaliacao = ForeignKeyField(Avaliacao)
+    data_hora_inicio = DateTimeField()
+    data_hora_fim = DateTimeField(null=True)
+    tempo_corrido = CharField(null=True)
 
     class Meta:
         primary_key = CompositeKey('CPF_aluno', 'ID_avaliacao')
-    
-    data_hora_inicio = DateTimeField()
-    data_hora_fim = DateTimeField()
-    tempo_corrido = TimeField()
     
 class RespostaQuestao(BaseModel):
     CPF_aluno = ForeignKeyField(Aluno)
     ID_avaliacao = ForeignKeyField(Avaliacao)
     ID_questao = ForeignKeyField(Questao)
+    resposta = TextField(null=True)
+    audio_resposta = BlobField(null=True)
 
     class Meta:
-        primary_key = CompositeKey('CPF_aluno', 'ID_avaliacao', 'ID_questao') 
-    
-    resposta = CharField()
-    audio_resposta = BlobField()
-
+        primary_key = CompositeKey('CPF_aluno', 'ID_avaliacao', 'ID_questao')
