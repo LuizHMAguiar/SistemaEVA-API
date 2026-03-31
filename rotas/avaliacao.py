@@ -77,7 +77,8 @@ def listar_avaliacoes():
             "disciplina": avaliacao.disciplina,
             "data_inicio": str(avaliacao.data_inicio), # Converter data para texto
             "data_fim": str(avaliacao.data_fim),       # Converter data para texto
-            "tempo": str(avaliacao.tempo)              # Converter tempo para texto
+            "tempo": str(avaliacao.tempo),             # Converter tempo para texto
+            "codigo_acesso": avaliacao.codigo_acesso
         })
         
     return jsonify(resultado), 200
@@ -96,7 +97,8 @@ def buscar_avaliacao_por_id(id):
             "disciplina": avaliacao.disciplina,
             "data_inicio": str(avaliacao.data_inicio),
             "data_fim": str(avaliacao.data_fim),
-            "tempo": str(avaliacao.tempo)
+            "tempo": str(avaliacao.tempo),
+            "codigo_acesso": avaliacao.codigo_acesso
         }
         return jsonify(resultado), 200
     except Avaliacao.DoesNotExist:
@@ -134,6 +136,8 @@ def atualizar_avaliacao(id):
             avaliacao.data_fim = dados['data_fim']
         if 'tempo' in dados:
             avaliacao.tempo = dados['tempo']
+        if 'codigo_acesso' in dados:
+            avaliacao.codigo_acesso = dados['codigo_acesso']
         
         avaliacao.save()
         return jsonify({"message": "Avaliação atualizada com sucesso!"}), 200
@@ -199,4 +203,3 @@ def clonar_avaliacao(id_original):
         return jsonify({"error": "O novo código de acesso já está em uso"}), 400
     except Exception as e:
         return jsonify({"error": "Erro ao clonar", "details": str(e)}), 500
-

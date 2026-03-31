@@ -6,7 +6,7 @@ from datetime import datetime
 # Definindo o Blueprint único para questões
 questao_bp = Blueprint('questao_bp', __name__)
 
-@questao_bp.route('/cadastro/questoes', methods=['POST'])
+@questao_bp.route('/questao', methods=['POST'])
 def cadastrar_questao():
     # Obtém o JSON e evita que o servidor trave se o corpo estiver mal formatado ou vazio
     dados = request.get_json(silent=True)
@@ -15,8 +15,9 @@ def cadastrar_questao():
         return jsonify({"error": "JSON inválido ou corpo da requisição vazio"}), 400
 
     # Validação de presença do ID da avaliação
-    id_av = dados.get('id_avaliacao')
-    if not id_av:
+    try:
+        id_av = int(dados.get('id_avaliacao'))
+    except (ValueError, TypeError):
         return jsonify({"error": "ID da avaliação é obrigatório"}), 400
     
     # Verifica se a avaliação existe no banco de dados
@@ -26,8 +27,7 @@ def cadastrar_questao():
 
     # Daqui para baixo continua o resto da sua lógica de criação...
     # Validação de campos obrigatórios da questão [cite: 73, 77, 81]
-    opcoes = dados.get('opcoes', {})
-    if not dados.get('tipo') or not dados.get('enunciado') or not opcoes.get('a') or not opcoes.get('b'):
+    if not dados.get('tipo') or not dados.get('enunciado') or not dados.get('opcao_a') or not dados.get('opcao_b'):
         return jsonify({"error": "Dados obrigatórios não informados: Tipo, Enunciado, Opção A e Opção B são necessários"}), 400
 
     if dados.get('tipo') not in ['Múltipla Escolha', 'Dissertativa', 'V ou F']:
@@ -39,11 +39,11 @@ def cadastrar_questao():
             CPF_professor=dados.get('cpf_professor'),
             tipo=dados.get('tipo'),
             enunciado=dados.get('enunciado'),
-            opcao_a=opcoes.get('a'),
-            opcao_b=opcoes.get('b'),
-            opcao_c=opcoes.get('c'),
-            opcao_d=opcoes.get('d'),
-            opcao_e=opcoes.get('e')
+            opcao_a=dados.get('opcao_a'),
+            opcao_b=dados.get('opcao_b'),
+            opcao_c=dados.get('opcao_c'),
+            opcao_d=dados.get('opcao_d'),
+            opcao_e=dados.get('opcao_e')
         )
 
         # 2. Cria o vínculo na tabela associativa [cite: 191, 194, 198]
