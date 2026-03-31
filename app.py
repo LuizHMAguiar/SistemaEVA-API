@@ -47,18 +47,19 @@ app.register_blueprint(professor)
 app.register_blueprint(instituicao)
 #app.register_blueprint(questao_bp)
 
+# Inicialização do banco de dados (executa tanto no Gunicorn quanto localmente)
+try:
+    db.connect()
+    db.create_tables([
+        Instituicao, Professor, Aluno, 
+        Avaliacao, Questao, QuestaoAvaliacao, 
+        RespostaAvaliacao, RespostaQuestao
+    ], safe=True)
+    print("Banco de dados e tabelas verificados/criados com sucesso!")
+except Exception as e:
+    print(f"Erro ao inicializar o banco: {e}")
+finally:
+    db.close()
+
 if __name__ == '__main__':
-    try:
-        db.connect()
-        # Cria as tabelas 
-        db.create_tables([
-            Instituicao, Professor, Aluno, 
-            Avaliacao, Questao, QuestaoAvaliacao, 
-            RespostaAvaliacao, RespostaQuestao
-        ], safe=True)
-        print("Banco de dados e tabelas criados com sucesso!")
-    except Exception as e:
-        print(f"Erro ao criar o banco: {e}")
-    finally:
-        db.close()
     app.run(debug=True)
