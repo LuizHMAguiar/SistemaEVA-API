@@ -17,10 +17,11 @@ app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mens
 allowed_origins = [
     "http://localhost:5000",       # Localhost
     "https://sistemaeva-api.onrender.com", #Link Render
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
-CORS(app, resources={r"/*": {"origins": allowed_origins}})
+CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
 
 
 # Inicializa as extensões
