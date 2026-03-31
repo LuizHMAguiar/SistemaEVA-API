@@ -16,7 +16,8 @@ app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mens
 # Lista de URLs permitidas (ajuste as portas do localhost se necessário)
 allowed_origins = [
     "http://localhost:5000",       # Localhost
-    "https://sistemaeva-api.onrender.com" #Link Render
+    "https://sistemaeva-api.onrender.com", #Link Render
+    "http://localhost:5173"
 ]
 
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
@@ -60,9 +61,6 @@ except Exception as e:
     print(f"Erro ao inicializar o banco: {e}")
 finally:
     db.close()
-
-# permite acesso do frontend local
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 
 if __name__ == '__main__':
