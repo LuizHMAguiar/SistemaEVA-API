@@ -36,6 +36,7 @@ def cadastrar_questao():
     try:
         # 1. Salva a questão [cite: 70, 73, 85, 89]
         nova_q = Questao.create(
+            CPF_professor=dados.get('cpf_professor'),
             tipo=dados.get('tipo'),
             enunciado=dados.get('enunciado'),
             opcao_a=opcoes.get('a'),

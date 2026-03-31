@@ -44,6 +44,7 @@ class Avaliacao(BaseModel):
 
 class Questao(BaseModel):  
     ID = AutoField(primary_key=True)
+    CPF_professor = ForeignKeyField(Professor)
     tipo = CharField()
     enunciado = CharField()
     opcao_a = CharField()
