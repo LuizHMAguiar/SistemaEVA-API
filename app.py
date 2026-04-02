@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mens
 # Lista de URLs permitidas (ajuste as portas do localhost se necessário)
 allowed_origins = [
     "https://sistemaeva-api.onrender.com", # Servidor Backend Render
-    "https://sistemaeva.onrender.com/" # Servidor Frontend Render
+    "https://sistemaeva.onrender.com" # Servidor Frontend Render
 ]
 
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
