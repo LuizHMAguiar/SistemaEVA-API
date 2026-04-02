@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
@@ -30,7 +30,7 @@ bcrypt.init_app(app)
 @app.before_request
 def _db_connect():
     if request.method == 'OPTIONS':
-        return response
+        return 
     if db.is_closed():
         db.connect()
 
