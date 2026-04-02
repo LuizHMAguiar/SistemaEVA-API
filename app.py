@@ -21,7 +21,7 @@ allowed_origins = [
     "http://127.0.0.1:5173"
 ]
 
-CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 
 # Inicializa as extensões
@@ -31,12 +31,16 @@ bcrypt.init_app(app)
 # 1. Segurança: Abre a conexão antes de cada pedido
 @app.before_request
 def _db_connect():
+    if request.method == 'OPTIONS':
+        return response
     if db.is_closed():
         db.connect()
 
 # 2. Segurança: Fecha a conexão após o pedido para libertar recursos
 @app.after_request
 def _db_close(response):
+    if request.method == 'OPTIONS':
+        return response
     if not db.is_closed():
         db.close()
     return response
