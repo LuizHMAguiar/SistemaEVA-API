@@ -19,8 +19,8 @@ allowed_origins = [
     "https://sistemaeva.onrender.com" # Servidor Frontend Render
 ]
 
-CORS(app, resources={r"/*": {"origins": allowed_origins}})
-
+# CORS(app, resources={r"/*": {"origins": allowed_origins}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Inicializa as extensões
 swagger = Swagger(app)
