@@ -150,6 +150,29 @@ def atualizar_avaliacao(id):
     except Exception as e:
         return jsonify({"error": "Erro ao atualizar avaliação", "details": str(e)}), 500
 
+@avaliacao.route('/avaliacao/codigo/<string:codigo>', methods=['GET'])
+def listar_avaliacao_por_codigo(codigo):
+    """Busca os detalhes de uma avaliação específica através do código de acesso"""
+    try:
+        avaliacao = Avaliacao.get(Avaliacao.codigo_acesso == codigo)
+        resultado = {
+            "id": avaliacao.ID,
+            "cpf_professor": avaliacao.CPF_professor_id,
+            "titulo": avaliacao.titulo,
+            "tipo": avaliacao.tipo,
+            "curso": avaliacao.curso,
+            "turma": avaliacao.turma,
+            "disciplina": avaliacao.disciplina,
+            "data_inicio": str(avaliacao.data_inicio),
+            "data_fim": str(avaliacao.data_fim),
+            "tempo": str(avaliacao.tempo),
+            "codigo_acesso": avaliacao.codigo_acesso
+        }
+        return jsonify(resultado), 200
+    except Avaliacao.DoesNotExist:
+        return jsonify({"error": "Avaliação com este código não encontrada"}), 404
+    except Exception as e:
+        return jsonify({"error": "Erro ao buscar avaliação pelo código", "details": str(e)}), 500
 
 
 @avaliacao.route('/avaliacao/<int:id>', methods=['DELETE'])

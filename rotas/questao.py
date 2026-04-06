@@ -34,9 +34,10 @@ def cadastrar_questao():
         return jsonify({"error": "Tipo de questão inválido."}), 400
 
     try:
-        # 1. Salva a questão [cite: 70, 73, 85, 89]
+        # 1. Salva a questão
         nova_q = Questao.create(
             CPF_professor=dados.get('cpf_professor'),
+            ID_avaliacao=id_av,
             tipo=dados.get('tipo'),
             enunciado=dados.get('enunciado'),
             opcao_a=dados.get('opcao_a'),
@@ -49,7 +50,7 @@ def cadastrar_questao():
         # 2. Cria o vínculo na tabela associativa [cite: 191, 194, 198]
         QuestaoAvaliacao.create(
             ID_questao=nova_q.ID,
-            ID_avaliacao=dados.get('id_avaliacao')
+            ID_avaliacao=id_av
         )
 
         return jsonify({"message": "Questão criada e vinculada com sucesso!", "id": nova_q.ID}), 201
