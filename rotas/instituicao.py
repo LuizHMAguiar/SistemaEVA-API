@@ -6,6 +6,7 @@ from models.models import Instituicao
 instituicao = Blueprint('instituicao', __name__)
 bcrypt = Bcrypt()
 
+#13 faz o cadastro da instituição, não podendo repitir o cnpj é o email.
 
 @instituicao.route('/instituicao', methods=['POST'])
 def cadastro_instituicao():
@@ -32,7 +33,9 @@ def cadastro_instituicao():
       return jsonify({"error": "Erro de integridade dos dados"}), 400
     except Exception as e:
       return jsonify({"error": "Erro ao cadastrar instituição", "details": str(e)}), 500
-  
+    
+#13 Lista tudas as instituições já criadas.
+
 @instituicao.route('/instituicao', methods=['GET'])
 def listar_instituicoes():  
     instituicoes = Instituicao.select()
@@ -45,6 +48,7 @@ def listar_instituicoes():
         })
     return jsonify(lista_instituicoes), 200
 
+#13 Lista uma intituição pelo cnpj da instituição.
 
 @instituicao.route('/instituicao/<int:instituicao_cnpj>', methods=['GET'])
 def obter_instituicao(instituicao_cnpj):
@@ -56,10 +60,14 @@ def obter_instituicao(instituicao_cnpj):
         "nome": instituicao.nome,
         "email": instituicao.email 
     }), 200
+
+#13 Atualiza instituição pelo cnpj, não podendo fazer modificação no propio cnpj.
+
+@instituicao.route('/instituicao/<string:instituicao_cnpj>', methods=['PATCH'])
+def atualizar_instituicao(instituicao_cnpj):
+    # No modelo Instituicao, a chave primária é o CNPJ (CharField)
+    instituicao = Instituicao.get_or_none(Instituicao.CNPJ == instituicao_cnpj)
     
-@instituicao.route('/instituicao/<int:instituicao_id>', methods=['PATCH'])
-def atualizar_instituicao(instituicao_id):
-    instituicao = Instituicao.get_or_none(Instituicao.id == instituicao_id)
     if not instituicao:
         return jsonify({"error": "Instituição não encontrada"}), 404
     
@@ -82,6 +90,8 @@ def atualizar_instituicao(instituicao_id):
     except Exception as e:
         return jsonify({"error": "Erro ao atualizar instituição", "details": str(e)}), 500
     
+#13 Deleta uma instituição pelo cnpj.
+
 @instituicao.route('/instituicao/<int:instituicao_cnpj>', methods=['DELETE'])
 def deletar_instituicao(instituicao_cnpj):
     instituicao = Instituicao.get_or_none(Instituicao.CNPJ == instituicao_cnpj)
