@@ -115,7 +115,7 @@ def adicionar_avaliacao():
         # get_or_create evita duplicar o início se o aluno recarregar a página
         resp_av = RespostaAvaliacao.create(
             CPF_aluno=cpf,
-            ID_avaliacao=cod_av
+            ID_avaliacao=prova.ID
         )
         return jsonify({
             "message": "Prova adicionada ao perfil do aluno",
