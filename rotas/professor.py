@@ -50,7 +50,6 @@ def listar_professores():
             "CNPJ_instituicao": professor.CNPJ_instituicao.CNPJ,
             "nome_completo": professor.nome_completo,
             "email": professor.email,
-            "senha": professor.senha
         })   
     return jsonify(resultado), 200
 
@@ -63,7 +62,6 @@ def buscar_professor_por_cpf(cpf):
             "CNPJ_instituicao": professor.CNPJ_instituicao.CNPJ,
             "nome_completo": professor.nome_completo,
             "email": professor.email,
-            "senha": professor.senha
         }
         return jsonify(resultado), 200
     except Professor.DoesNotExist:
