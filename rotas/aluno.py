@@ -99,6 +99,30 @@ def atualizar_aluno(cpf):
         return jsonify({"error": "Aluno não encontrado"}), 404
 
 
+@aluno.route('/aluno/avaliacao', methods=['POST'])
+def adicionar_avaliacao():
+    dados = request.get_json()
+    cpf = dados.get('cpf_aluno')
+    cod_av = dados.get('cod_avaliacao')
+
+    aluno_obj = Aluno.get_or_none(Aluno.CPF == cpf)
+    prova = Avaliacao.get_or_none(Avaliacao.codigo_acesso == cod_av)
+
+    if not aluno_obj or not prova:
+        return jsonify({"error": "Aluno ou Avaliação não encontrados"}), 404
+
+    try:
+        # get_or_create evita duplicar o início se o aluno recarregar a página
+        resp_av = RespostaAvaliacao.create(
+            CPF_aluno=cpf,
+            ID_avaliacao=cod_av
+        )
+        return jsonify({
+            "message": "Prova adicionada ao perfil do aluno",
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
     
 #@questao_bp.route('/audio_enunciado/<int:id_questao>', methods=['GET'])
 #def ouvir_enunciado(id_questao):

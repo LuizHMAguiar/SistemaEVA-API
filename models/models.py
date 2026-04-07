@@ -64,7 +64,7 @@ class QuestaoAvaliacao(BaseModel):
 class RespostaAvaliacao(BaseModel):
     CPF_aluno = ForeignKeyField(Aluno)
     ID_avaliacao = ForeignKeyField(Avaliacao)
-    data_hora_inicio = DateTimeField()
+    data_hora_inicio = DateTimeField(null=True)
     data_hora_fim = DateTimeField(null=True)
     tempo_corrido = CharField(null=True)
 
