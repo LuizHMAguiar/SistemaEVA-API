@@ -124,62 +124,48 @@ def adicionar_avaliacao():
         return jsonify({"error": str(e)}), 500
     
 
-@aluno.route('/aluno/avaliacao/ativas/<cpf>', methods=['GET'])
-def avaliacoes_ativas_aluno(cpf):
+@aluno.route('/aluno/avaliacoes/<cpf>', methods=['GET'])
+def listar_avaliacoes_aluno(cpf):
     try:
-        aluno_obj = Aluno.get(Aluno.CPF == cpf)
+        Aluno.get(Aluno.CPF == cpf)
     except Aluno.DoesNotExist:
         return jsonify({"error": "Aluno não encontrado"}), 404
     
     now = datetime.now()
-    avaliacoes = (Avaliacao
-                  .select()
-                  .join(RespostaAvaliacao)
-                  .where(RespostaAvaliacao.CPF_aluno == cpf,
-                         Avaliacao.data_inicio <= now,
-                         Avaliacao.data_fim >= now))
-    
-    return jsonify([{
-        "ID": av.ID,
-        "CPF_professor": av.CPF_professor.CPF,
-        "titulo": av.titulo,
-        "tipo": av.tipo,
-        "curso": av.curso,
-        "turma": av.turma,
-        "disciplina": av.disciplina,
-        "data_inicio": av.data_inicio.isoformat(),
-        "data_fim": av.data_fim.isoformat(),
-        "tempo": av.tempo,
-        "codigo_acesso": av.codigo_acesso
-    } for av in avaliacoes]), 200
+    query = (RespostaAvaliacao
+             .select(RespostaAvaliacao, Avaliacao)
+             .join(Avaliacao)
+             .where(RespostaAvaliacao.CPF_aluno == cpf))
 
-@aluno.route('/aluno/avaliacao/inativas/<cpf>', methods=['GET'])
-def avaliacoes_inativas_aluno(cpf):
-    try:
-        aluno_obj = Aluno.get(Aluno.CPF == cpf)
-    except Aluno.DoesNotExist:
-        return jsonify({"error": "Aluno não encontrado"}), 404
+    resultado = []
+    for registro in query:
+        av = registro.ID_avaliacao
+        
+        # Garantir que as datas sejam objetos datetime para comparação
+        data_inicio = datetime.fromisoformat(str(av.data_inicio)) if isinstance(av.data_inicio, str) else av.data_inicio
+        data_fim = datetime.fromisoformat(str(av.data_fim)) if isinstance(av.data_fim, str) else av.data_fim
+        
+        # Define status baseado no horário atual
+        esta_ativa = False
+        if data_inicio and data_fim:
+            esta_ativa = data_inicio <= now <= data_fim
+        
+        resultado.append({
+            "ID": av.ID,
+            "CPF_professor": av.CPF_professor.CPF,
+            "titulo": av.titulo,
+            "tipo": av.tipo,
+            "curso": av.curso,
+            "turma": av.turma,
+            "disciplina": av.disciplina,
+            "data_inicio": data_inicio.isoformat() if data_inicio else None,
+            "data_fim": data_fim.isoformat() if data_fim else None,
+            "tempo": str(av.tempo),
+            "codigo_acesso": av.codigo_acesso,
+            "status": "ativa" if esta_ativa else "inativa"
+        })
     
-    now = datetime.now()
-    avaliacoes = (Avaliacao
-                  .select()
-                  .join(RespostaAvaliacao)
-                  .where(RespostaAvaliacao.CPF_aluno == cpf)
-                  .where((Avaliacao.data_fim < now) | (Avaliacao.data_inicio > now)))
-    
-    return jsonify([{
-        "ID": av.ID,
-        "CPF_professor": av.CPF_professor.CPF,
-        "titulo": av.titulo,
-        "tipo": av.tipo,
-        "curso": av.curso,
-        "turma": av.turma,
-        "disciplina": av.disciplina,
-        "data_inicio": av.data_inicio.isoformat(),
-        "data_fim": av.data_fim.isoformat(),
-        "tempo": av.tempo,
-        "codigo_acesso": av.codigo_acesso
-    } for av in avaliacoes]), 200
+    return jsonify(resultado), 200
     
     
 #@questao_bp.route('/audio_enunciado/<int:id_questao>', methods=['GET'])
