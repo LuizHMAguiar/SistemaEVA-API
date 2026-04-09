@@ -238,21 +238,27 @@ def iniciar_prova():
     aluno_obj = Aluno.get_or_none(Aluno.CPF == cpf)
     prova = Avaliacao.get_or_none(Avaliacao.ID == id_av)
 
+
     if not aluno_obj or not prova:
         return jsonify({"error": "Aluno ou Avaliação não encontrados"}), 404
 
+    vinculo = RespostaAvaliacao.get_or_none(
+        (RespostaAvaliacao.CPF_aluno == cpf) &
+        (RespostaAvaliacao.ID_avaliacao == id_av)
+    )
+
+    if vinculo is None:
+        return jsonify({"error": "Aluno não está vinculado a esta avaliação"}), 400
+
     try:
-        # get_or_create evita duplicar o início se o aluno recarregar a página
-        resp_av, created = RespostaAvaliacao.get_or_create(
-            CPF_aluno=cpf,
-            ID_avaliacao=id_av,
-            defaults={'data_hora_inicio': datetime.now()}
-        )
-        return jsonify({
-            "message": "Prova iniciada", 
-            "data_inicio": resp_av.data_hora_inicio.strftime("%Y-%m-%d %H:%M:%S"),
-            "reutilizado": not created
-        }), 200
+        if vinculo.data_hora_inicio is None:
+            vinculo.data_hora_inicio = datetime.now()
+            vinculo.save()
+            return jsonify({
+                "message": "Prova iniciada",
+                "data_inicio": vinculo.data_hora_inicio.strftime("%Y-%m-%d %H:%M:%S")
+            }), 200
+        return jsonify({"message": "Prova já foi iniciada", "data_inicio": vinculo.data_hora_inicio.strftime("%Y-%m-%d %H:%M:%S")} ), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -269,16 +275,17 @@ def responder_questao():
         return jsonify({"error": "Questão não pertence a esta avaliação"}), 400
 
     try:
-        resposta, created = RespostaQuestao.get_or_create(
+        resposta = RespostaQuestao.get_or_none(
             CPF_aluno=cpf,
             ID_avaliacao=id_av,
-            ID_questao=id_q,
-            defaults={'resposta': resp_texto}
+            ID_questao=id_q
         )
-        if not created:
-            resposta.resposta = resp_texto
-            resposta.save()
-        return jsonify({"message": "Resposta salva"}), 200
+        if resposta is None:
+            return jsonify({"error": "Resposta não encontrada para atualização"}), 404
+        
+        resposta.resposta = resp_texto
+        resposta.save()
+        return jsonify({"message": "Resposta atualizada"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
