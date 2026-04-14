@@ -105,10 +105,25 @@ def responder_questao():
     id_questao = dados.get('id_questao')
     texto_resposta = dados.get('resposta')
 
-    #Verificar se o cpf do aluno existe e se fez login
-    #Verificar se a avaliação é valida (existe e está dentro do prazo de resposta)
-    #Verificar se a questão existe, pertence à avaliação
+    # 1. Verificar se o aluno existe
+    aluno = Aluno.get_or_none(Aluno.CPF == cpf_aluno)
+    if not aluno:
+        return jsonify({"error": "Aluno não encontrado"}), 401
+
+    # 2. Verificar se a avaliação existe e está no prazo
+    avaliacao = Avaliacao.get_or_none(Avaliacao.ID == id_avaliacao)
+    if not avaliacao:
+        return jsonify({"error": "Avaliação não encontrada"}), 404
     
+    agora = datetime.now()
+    if agora < avaliacao.data_inicio or agora > avaliacao.data_fim:
+        return jsonify({"error": "Esta avaliação não está disponível no momento (fora do prazo)"}), 403
+
+    # 3. Verificar se a questão existe e pertence à avaliação
+    vinculo = QuestaoAvaliacao.get_or_none((QuestaoAvaliacao.ID_questao == id_questao) & 
+                                           (QuestaoAvaliacao.ID_avaliacao == id_avaliacao))
+    if not vinculo:
+        return jsonify({"error": "Esta questão não pertence à avaliação informada"}), 400
 
     try:
         resposta_obj, created = RespostaQuestao.get_or_create(
