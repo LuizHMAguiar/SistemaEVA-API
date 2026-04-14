@@ -96,31 +96,32 @@ def listar_questoes_da_avaliacao(id_avaliacao):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@questao_bp.route('/responder', methods=['POST'])
+@questao_bp.route('/questao/responder', methods=['POST'])
 def responder_questao():
     """Recebe respostas em texto e/ou áudio (multipart/form-data) [cite: 180, 184]"""
-    cpf_aluno = request.form.get('cpf_aluno')
-    id_avaliacao = request.form.get('id_avaliacao')
-    id_questao = request.form.get('id_questao')
-    texto_resposta = request.form.get('resposta')
-    arquivo_audio = request.files.get('audio')
+    dados = request.get_json()
+    cpf_aluno = dados.get('cpf_aluno')
+    id_avaliacao = dados.get('id_avaliacao')
+    id_questao = dados.get('id_questao')
+    texto_resposta = dados.get('resposta')
+
+    #Verificar se o cpf do aluno existe e se fez login
+    #Verificar se a avaliação é valida (existe e está dentro do prazo de resposta)
+    #Verificar se a questão existe, pertence à avaliação
+    
 
     try:
-        audio_blob = arquivo_audio.read() if arquivo_audio else None
-
-        # Salva ou atualiza a resposta do aluno [cite: 164, 168, 172, 176]
         resposta_obj, created = RespostaQuestao.get_or_create(
-            CPF_aluno=cpf_aluno,
-            ID_avaliacao=id_avaliacao,
-            ID_questao=id_questao,
-            defaults={'resposta': texto_resposta, 'audio_resposta': audio_blob}
+            CPF_aluno_id=cpf_aluno,
+            ID_avaliacao_id=id_avaliacao,
+            ID_questao_id=id_questao,
+            defaults={'resposta': texto_resposta or ""}
         )
 
-        if not created:
+        if not created and texto_resposta is not None:
             resposta_obj.resposta = texto_resposta
-            if audio_blob:
-                resposta_obj.audio_resposta = audio_blob
-            resposta_obj.save()
+        
+        resposta_obj.save()
 
         return jsonify({"message": "Resposta salva com sucesso!"}), 201
     except Exception as e:
