@@ -2,11 +2,13 @@ from flask import Blueprint, request, jsonify
 from models.models import Questao, QuestaoAvaliacao, Avaliacao, Aluno, RespostaQuestao
 from peewee import IntegrityError
 from datetime import datetime
-
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 # Definindo o Blueprint único para questões
 questao_bp = Blueprint('questao_bp', __name__)
 
 @questao_bp.route('/questao', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def cadastrar_questao():
     # Obtém o JSON e evita que o servidor trave se o corpo estiver mal formatado ou vazio
     dados = request.get_json(silent=True)
@@ -58,6 +60,7 @@ def cadastrar_questao():
         return jsonify({"error": "Erro ao criar questão", "details": str(e)}), 500
 
 @questao_bp.route('/avaliacao/vincular-existente', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def vincular_questao_existente():
     """Rota para reaproveitar uma questão em uma nova avaliação"""
     dados = request.get_json()
@@ -76,6 +79,7 @@ def vincular_questao_existente():
         return jsonify({"error": str(e)}), 500
 
 @questao_bp.route('/avaliacao/<int:id_avaliacao>/questoes', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def listar_questoes_da_avaliacao(id_avaliacao):
     """Lista todas as questões vinculadas a uma avaliação específica"""
     try:
@@ -97,6 +101,7 @@ def listar_questoes_da_avaliacao(id_avaliacao):
         return jsonify({"error": str(e)}), 500
 
 @questao_bp.route('/questao/responder', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def responder_questao():
     """Recebe respostas em texto e/ou áudio (multipart/form-data) [cite: 180, 184]"""
     dados = request.get_json()
@@ -143,6 +148,7 @@ def responder_questao():
         return jsonify({"error": str(e)}), 500
 
 @questao_bp.route('/provas_disponibilidade/<cpf_aluno>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def provas_disponiveis(cpf_aluno):
     """Lista provas baseadas no curso/turma do aluno e no horário atual [cite: 19, 23, 131, 135]"""
     aluno = Aluno.get_or_none(Aluno.CPF == cpf_aluno)

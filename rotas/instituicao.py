@@ -2,13 +2,15 @@ from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt
 from peewee import IntegrityError
 from models.models import Instituicao
-
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 instituicao = Blueprint('instituicao', __name__)
 bcrypt = Bcrypt()
 
 #13 faz o cadastro da instituição, não podendo repitir o cnpj é o email.
 
 @instituicao.route('/instituicao', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def cadastro_instituicao():
     dados = request.get_json()
     
@@ -37,6 +39,7 @@ def cadastro_instituicao():
 #13 Lista tudas as instituições já criadas.
 
 @instituicao.route('/instituicao', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def listar_instituicoes():  
     instituicoes = Instituicao.select()
     lista_instituicoes = []
@@ -51,6 +54,7 @@ def listar_instituicoes():
 #13 Lista uma intituição pelo cnpj da instituição.
 
 @instituicao.route('/instituicao/<int:instituicao_cnpj>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def obter_instituicao(instituicao_cnpj):
     instituicao = Instituicao.get_or_none(Instituicao.CNPJ == instituicao_cnpj)
     if not instituicao:
@@ -64,6 +68,7 @@ def obter_instituicao(instituicao_cnpj):
 #13 Atualiza instituição pelo cnpj, não podendo fazer modificação no propio cnpj.
 
 @instituicao.route('/instituicao/<string:instituicao_cnpj>', methods=['PATCH'])
+@jwt_required()   # Exige autenticação por token
 def atualizar_instituicao(instituicao_cnpj):
     # No modelo Instituicao, a chave primária é o CNPJ (CharField)
     instituicao = Instituicao.get_or_none(Instituicao.CNPJ == instituicao_cnpj)
@@ -93,6 +98,7 @@ def atualizar_instituicao(instituicao_cnpj):
 #13 Deleta uma instituição pelo cnpj.
 
 @instituicao.route('/instituicao/<int:instituicao_cnpj>', methods=['DELETE'])
+@jwt_required()   # Exige autenticação por token
 def deletar_instituicao(instituicao_cnpj):
     instituicao = Instituicao.get_or_none(Instituicao.CNPJ == instituicao_cnpj)
     if not instituicao:

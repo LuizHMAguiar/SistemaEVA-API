@@ -4,7 +4,8 @@ from flask_bcrypt import Bcrypt
 from flask import send_file
 import io
 from models.models import Instituicao, Professor, RespostaQuestao, Questao
-
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 professor = Blueprint('professor', __name__)
 bcrypt = Bcrypt()
 
@@ -40,6 +41,7 @@ def cadastro_professor():
         return jsonify({"error": "Erro de integridade"}), 400
     
 @professor.route('/professor', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def listar_professores():
     professores  = Professor.select()
     resultado = []
@@ -54,6 +56,7 @@ def listar_professores():
     return jsonify(resultado), 200
 
 @professor.route('/professor/<string:cpf>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def buscar_professor_por_cpf(cpf):
     try:
         professor = Professor.get(Professor.CPF == cpf)
@@ -70,6 +73,7 @@ def buscar_professor_por_cpf(cpf):
         return jsonify({"error": "Erro ao buscar professor", "details": str(e)}), 500
 
 @professor.route('/professor/<string:cpf>', methods=['DELETE'])
+@jwt_required()   # Exige autenticação por token
 def excluir_professor(cpf):
     try:
         professor = Professor.get(Professor.CPF == cpf)
@@ -81,6 +85,7 @@ def excluir_professor(cpf):
         return jsonify({"error": "Erro ao excluir professor", "details": str(e)}), 500
         
 @professor.route('/professor/<string:cpf>', methods=['PATCH'])
+@jwt_required()   # Exige autenticação por token
 def atualizar_professor(cpf):
     dados = request.get_json()
     try:
@@ -112,6 +117,7 @@ def atualizar_professor(cpf):
 from models.models import RespostaAvaliacao, Aluno, Avaliacao
 
 @professor.route('/relatorio/avaliacao/<int:id_avaliacao>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def relatorio_avaliacao(id_avaliacao):
     try:
         # Busca todas as respostas daquela avaliação específica
@@ -143,6 +149,7 @@ def relatorio_avaliacao(id_avaliacao):
         return jsonify({"error": "Erro ao gerar relatório", "details": str(e)}), 500 
 
 @professor.route('/relatorio/aluno/<string:cpf_aluno>/avaliacao/<int:id_avaliacao>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def detalhe_respostas_aluno(cpf_aluno, id_avaliacao):
     try:
         # Busca as respostas vinculadas ao aluno e avaliação, trazendo os dados da questão
@@ -176,6 +183,7 @@ def detalhe_respostas_aluno(cpf_aluno, id_avaliacao):
 
 
 @professor.route('/audio/<string:cpf>/<int:id_av>/<int:id_q>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def buscar_audio_resposta(cpf, id_av, id_q):
     try:
         # Busca a resposta específica que contém o arquivo de áudio

@@ -2,16 +2,17 @@ from flask import Flask, request
 from flask_cors import CORS
 from flasgger import Swagger
 from rotas.auth import auth, bcrypt
+from flask_jwt_extended import JWTManager
 from rotas.avaliacao import avaliacao 
 from rotas.aluno import aluno
 from rotas.questao import questao_bp    
 from rotas.professor import professor
 from rotas.instituicao import instituicao
 from models.models import db, Instituicao, Aluno, Professor, Avaliacao, Questao, QuestaoAvaliacao, RespostaAvaliacao, RespostaQuestao
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'uma_chave_muito_segura' # Protege as sessões e mensagens flash
+app.config["JWT_SECRET_KEY"] = "uma_chave_muito_segura"  
+jwt = JWTManager(app)
 
 # Lista de URLs permitidas (ajuste as portas do localhost se necessário)
 allowed_origins = [

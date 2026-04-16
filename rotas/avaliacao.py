@@ -1,12 +1,15 @@
 from flask import Blueprint, request, jsonify
 from peewee import IntegrityError
 from models.models import Avaliacao, Instituicao, Professor, Aluno, RespostaAvaliacao, RespostaQuestao, QuestaoAvaliacao
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 from datetime import datetime
 import datetime as dt
 
 avaliacao = Blueprint('avaliacao', __name__)
 
 @avaliacao.route('/avaliacao', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def cadastro_avaliacao():
     dados = request.get_json()
     
@@ -44,6 +47,7 @@ def cadastro_avaliacao():
         return jsonify({"error": "Erro interno no servidor", "details": str(e)}), 500
 
 @avaliacao.route('/avaliacao/acesso/<string:codigo>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def buscar_por_codigo(codigo):
     try:
         # Busca a avaliação pelo código de acesso único
@@ -64,6 +68,7 @@ def buscar_por_codigo(codigo):
 
 
 @avaliacao.route('/avaliacao', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def listar_avaliacoes():
     avaliacoes = Avaliacao.select()
     resultado = []
@@ -86,6 +91,7 @@ def listar_avaliacoes():
     return jsonify(resultado), 200
 
 @avaliacao.route('/avaliacao/<int:id>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def buscar_avaliacao_por_id(id):
     try:
         avaliacao = Avaliacao.get(Avaliacao.ID == id)
@@ -109,6 +115,7 @@ def buscar_avaliacao_por_id(id):
         return jsonify({"error": "Erro ao buscar avaliação", "details": str(e)}), 500
 
 @avaliacao.route('/avaliacao/<int:id>', methods=['PATCH'])
+@jwt_required()   # Exige autenticação por token
 def atualizar_avaliacao(id):
     dados = request.get_json()
     
@@ -151,6 +158,7 @@ def atualizar_avaliacao(id):
         return jsonify({"error": "Erro ao atualizar avaliação", "details": str(e)}), 500
 
 @avaliacao.route('/avaliacao/codigo/<string:codigo>', methods=['GET'])
+@jwt_required()   # Exige autenticação por token
 def listar_avaliacao_por_codigo(codigo):
     """Busca os detalhes de uma avaliação específica através do código de acesso"""
     try:
@@ -176,6 +184,7 @@ def listar_avaliacao_por_codigo(codigo):
 
 
 @avaliacao.route('/avaliacao/<int:id>', methods=['DELETE'])
+@jwt_required()   # Exige autenticação por token
 def excluir_avaliacao(id):
     try:
         avaliacao_obj = Avaliacao.get(Avaliacao.ID == id)
@@ -189,6 +198,7 @@ def excluir_avaliacao(id):
 
 
 @avaliacao.route('/avaliacao/clonar/<int:id_original>', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def clonar_avaliacao(id_original):
     try:
         # 1. Busca a avaliação que será clonada
@@ -230,6 +240,7 @@ def clonar_avaliacao(id_original):
         return jsonify({"error": "Erro ao clonar", "details": str(e)}), 500
 
 @avaliacao.route('/avaliacao/iniciar', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def iniciar_prova():
     dados = request.get_json()
     cpf = dados.get('cpf_aluno')
@@ -263,6 +274,7 @@ def iniciar_prova():
         return jsonify({"error": str(e)}), 500
 
 @avaliacao.route('/avaliacao/responder-questao', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def responder_questao():
     dados = request.get_json()
     cpf = dados.get('cpf_aluno')
@@ -290,6 +302,7 @@ def responder_questao():
         return jsonify({"error": str(e)}), 500
 
 @avaliacao.route('/avaliacao/finalizar', methods=['POST'])
+@jwt_required()   # Exige autenticação por token
 def finalizar_prova():
     dados = request.get_json()
     cpf = dados.get('cpf_aluno')

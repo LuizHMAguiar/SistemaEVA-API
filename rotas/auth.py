@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt
 from peewee import IntegrityError
 from models.models import Instituicao, Professor, Aluno
+from flask_jwt_extended import create_access_token
 
 auth = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
@@ -21,6 +22,7 @@ def login():
 
     if user and bcrypt.check_password_hash(user.senha, senha):
         if instituicao:
+            identity = instituicao.CNPJ
             usuario = {
                 'nome': instituicao.nome,
                 'email': instituicao.email,
@@ -28,6 +30,7 @@ def login():
                 'tipo': 'instituicao'
             }
         elif professor:
+            identity = professor.CPF
             usuario = {
                 'nome': professor.nome_completo,
                 'email': professor.email,
@@ -36,6 +39,7 @@ def login():
                 'tipo': 'professor'
             }
         else:
+            identity = aluno.CPF
             usuario = {
                 'nome': aluno.nome_completo,
                 'email': aluno.email,
@@ -44,10 +48,14 @@ def login():
                 'tipo': 'aluno'
             }
 
+        # Gera o token
+        token = create_access_token(identity=identity)
+
         return jsonify({
             'status': 'sucesso',
             'message': 'Login realizado!',
-            'usuario': usuario
+            'usuario': usuario,
+            'token': token
         }), 200
 
     return jsonify({'status': 'erro', 'message': 'Credenciais inválidas'}), 401
