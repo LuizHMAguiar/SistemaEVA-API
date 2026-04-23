@@ -258,7 +258,7 @@ def iniciar_prova():
         (RespostaAvaliacao.ID_avaliacao == id_av)
     )
 
-    if vinculo is not None:
+    if vinculo is None:
         return jsonify({"error": "Aluno não está vinculado a esta avaliação"}), 400
 
     try:
