@@ -132,9 +132,9 @@ def responder_questao():
 
     try:
         resposta_obj, created = RespostaQuestao.get_or_create(
-            CPF_aluno_id=cpf_aluno,
-            ID_avaliacao_id=id_avaliacao,
-            ID_questao_id=id_questao,
+            CPF_aluno=cpf_aluno,
+            ID_avaliacao=id_avaliacao,
+            ID_questao=id_questao,
             defaults={'resposta': texto_resposta or ""}
         )
 
