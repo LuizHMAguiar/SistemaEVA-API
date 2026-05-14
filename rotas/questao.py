@@ -101,51 +101,80 @@ def listar_questoes_da_avaliacao(id_avaliacao):
         return jsonify({"error": str(e)}), 500
 
 @questao_bp.route('/questao/responder', methods=['POST'])
-@jwt_required()   # Exige autenticação por token
 def responder_questao():
-    """Recebe respostas em texto e/ou áudio (multipart/form-data) [cite: 180, 184]"""
+    """Recebe respostas em texto e/ou áudio (multipart/form-data)"""
+
     dados = request.get_json()
+
     cpf_aluno = dados.get('cpf_aluno')
     id_avaliacao = dados.get('id_avaliacao')
     id_questao = dados.get('id_questao')
     texto_resposta = dados.get('resposta')
 
-    # 1. Verificar se o aluno existe
+    # 1. Verificar aluno
     aluno = Aluno.get_or_none(Aluno.CPF == cpf_aluno)
     if not aluno:
         return jsonify({"error": "Aluno não encontrado"}), 401
 
-    # 2. Verificar se a avaliação existe e está no prazo
+    # 2. Verificar avaliação
     avaliacao = Avaliacao.get_or_none(Avaliacao.ID == id_avaliacao)
     if not avaliacao:
         return jsonify({"error": "Avaliação não encontrada"}), 404
-    
+
+    # Verificação do formato de data e hora
+    try:
+        data_inicio = avaliacao.data_inicio
+        data_fim = avaliacao.data_fim
+
+        # converte caso venha como string do banco
+        if isinstance(data_inicio, str):
+            data_inicio = datetime.fromisoformat(data_inicio)
+
+        if isinstance(data_fim, str):
+            data_fim = datetime.fromisoformat(data_fim)
+
+    except Exception:
+        return jsonify({"error": "Erro ao interpretar datas da avaliação"}), 500
+
     agora = datetime.now()
-    if agora < avaliacao.data_inicio or agora > avaliacao.data_fim:
-        return jsonify({"error": "Esta avaliação não está disponível no momento (fora do prazo)"}), 403
 
-    # 3. Verificar se a questão existe e pertence à avaliação
-    vinculo = QuestaoAvaliacao.get_or_none((QuestaoAvaliacao.ID_questao == id_questao) & 
-                                           (QuestaoAvaliacao.ID_avaliacao == id_avaliacao))
+    if agora < data_inicio or agora > data_fim:
+        return jsonify({
+            "error": "Esta avaliação não está disponível no momento (fora do prazo)"
+        }), 403
+
+    # 3. Verificar questão na avaliação
+    vinculo = QuestaoAvaliacao.get_or_none(
+        (QuestaoAvaliacao.ID_questao == id_questao) &
+        (QuestaoAvaliacao.ID_avaliacao == id_avaliacao)
+    )
+
     if not vinculo:
-        return jsonify({"error": "Esta questão não pertence à avaliação informada"}), 400
+        return jsonify({
+            "error": "Esta questão não pertence à avaliação informada"
+        }), 400
 
+    # 4. Salvar resposta
     try:
         resposta_obj, created = RespostaQuestao.get_or_create(
-            CPF_aluno=cpf_aluno,
-            ID_avaliacao=id_avaliacao,
+            CPF_aluno=aluno,
+            ID_avaliacao=avaliacao,
             ID_questao=id_questao,
             defaults={'resposta': texto_resposta or ""}
         )
 
         if not created and texto_resposta is not None:
             resposta_obj.resposta = texto_resposta
-        
-        resposta_obj.save()
+            resposta_obj.save()
 
-        return jsonify({"message": "Resposta salva com sucesso!"}), 201
+        return jsonify({
+            "message": "Resposta salva com sucesso!"
+        }), 201
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 @questao_bp.route('/provas_disponibilidade/<cpf_aluno>', methods=['GET'])
 @jwt_required()   # Exige autenticação por token
