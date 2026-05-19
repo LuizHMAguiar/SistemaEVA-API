@@ -1,3 +1,4 @@
+from datetime import timedelta # 1. Importe o timedelta
 from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt
 from peewee import IntegrityError
@@ -48,8 +49,8 @@ def login():
                 'tipo': 'aluno'
             }
 
-        # Gera o token
-        token = create_access_token(identity=identity)
+        # 2. Defina a duração de 1 hora aqui
+        token = create_access_token(identity=identity, expires_delta=timedelta(hours=1))
 
         return jsonify({
             'status': 'sucesso',
@@ -59,3 +60,4 @@ def login():
         }), 200
 
     return jsonify({'status': 'erro', 'message': 'Credenciais inválidas'}), 401
+
