@@ -39,7 +39,6 @@ def cadastro_instituicao():
 #13 Lista tudas as instituições já criadas.
 
 @instituicao.route('/instituicao', methods=['GET'])
-@jwt_required()   # Exige autenticação por token
 def listar_instituicoes():  
     instituicoes = Instituicao.select()
     lista_instituicoes = []
