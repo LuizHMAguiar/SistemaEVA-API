@@ -282,6 +282,9 @@ def responder_questao():
     id_q = dados.get('id_questao')
     resp_texto = dados.get('resposta')
 
+    if not cpf or not id_av:
+        return jsonify({"error": "cpf_aluno e id_avaliacao são obrigatórios"}), 400
+
     # Valida se a questão pertence à prova
     if not QuestaoAvaliacao.get_or_none((QuestaoAvaliacao.ID_avaliacao == id_av) & (QuestaoAvaliacao.ID_questao == id_q)):
         return jsonify({"error": "Questão não pertence a esta avaliação"}), 400
@@ -307,6 +310,19 @@ def finalizar_prova():
     dados = request.get_json()
     cpf = dados.get('cpf_aluno')
     id_av = dados.get('id_avaliacao')
+
+    if not cpf or not id_av:
+        return jsonify({"error": "cpf_aluno e id_avaliacao são obrigatórios"}), 404
+    
+    # Validar se o CPF do aluno existe
+    aluno_existente = Aluno.get_or_none(Aluno.CPF == cpf)
+    if not aluno_existente:
+        return jsonify({"error": "CPF do aluno não encontrado no sistema"}), 404
+    
+    # Validar se a avaliação existe
+    avaliacao_existente = Avaliacao.get_or_none(Avaliacao.ID == id_av)
+    if not avaliacao_existente:
+        return jsonify({"error": "Avaliação não encontrada no sistema"}), 404
 
     try:
         registro = RespostaAvaliacao.get_or_none(
@@ -338,3 +354,4 @@ def finalizar_prova():
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
